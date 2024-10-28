@@ -6,7 +6,7 @@ import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
 import dynamic from 'next/dynamic';
 import { Analytics } from "@vercel/analytics/react"
-
+import Head from 'next/head'
 
 require('@solana/wallet-adapter-react-ui/styles.css');
 
@@ -24,7 +24,11 @@ export default function App({ Component, pageProps }: AppProps) {
     <ConnectionProvider endpoint={endpoint}>
       <WalletProvider wallets={wallets} autoConnect>
         <WalletModalProviderDynamic>
+          <Head>
+            <title>Explorer and token creator in SOON</title>
+          </Head>
           <Component {...pageProps} />
+          <Analytics />
         </WalletModalProviderDynamic>
       </WalletProvider>
     </ConnectionProvider>
