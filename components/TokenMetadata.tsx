@@ -3,23 +3,91 @@ import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import { mplTokenMetadata, fetchDigitalAsset } from "@metaplex-foundation/mpl-token-metadata";
 import { publicKey } from "@metaplex-foundation/umi";
 import TokenSearch from './TokenSearch';
+import { Connection, PublicKey } from '@solana/web3.js';
+import { TOKEN_PROGRAM_ID, AccountLayout } from '@solana/spl-token';
+import TokenList from './TokenList';
+
 interface TokenMetadata {
+  name: string;
+  symbol: string;
+  uri: string;
+  supply: number;
+  decimals: number;
+  holders: {
+    address: string;
+    amount: number;
+  }[];
+  jsonMetadata?: {
     name: string;
     symbol: string;
-    uri: string;
-    supply: number;
-    decimals: number;
-    jsonMetadata?: {
+    image: string;
+    description: string;
+    creator: {
       name: string;
-      symbol: string;
-      image: string;
-      description: string;
-      creator: {
-        name: string;
-        site: string;
-      };
-      [key: string]: any;
+      site: string;
     };
+    [key: string]: any;
+  };
+}
+
+interface HoldersModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  holders: { address: string; amount: number }[];
+  symbol: string;
+  tokenName: string;
+  totalSupply: number;
+}
+
+function HoldersModal({ isOpen, onClose, holders, symbol, tokenName, totalSupply }: HoldersModalProps) {
+  if (!isOpen) return null;
+
+  // Ordenar holders por cantidad de tokens (mayor a menor)
+  const sortedHolders = [...holders].sort((a, b) => b.amount - a.amount);
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-black/90 w-full max-w-2xl max-h-[80vh] rounded-xl border border-purple-800/30 p-6 m-4">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-xl font-semibold text-purple-400">
+            Token Holders of {tokenName} ({holders.length})
+          </h3>
+          <button 
+            onClick={onClose}
+            className="text-gray-400 hover:text-white transition-colors"
+          >
+            ✕
+          </button>
+        </div>
+        
+        <div className="overflow-y-auto max-h-[calc(80vh-8rem)]">
+          {sortedHolders.map((holder) => {
+            const percentage = (holder.amount / totalSupply) * 100;
+            return (
+              <div 
+                key={holder.address} 
+                className="bg-black/60 p-4 rounded-lg border border-purple-800/20 mb-2"
+              >
+                <div className="flex justify-between items-center">
+                  <div className="font-mono text-sm text-white break-all">
+                    {holder.address}
+                  </div>
+                  <div className="text-right">
+                    <div className="text-purple-400">
+                      {holder.amount.toLocaleString()} {symbol}
+                    </div>
+                    <div className="text-xs text-gray-400">
+                      {percentage.toFixed(2)}% of supply
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function TokenMetadata() {
@@ -27,6 +95,9 @@ export default function TokenMetadata() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tokenAddress, setTokenAddress] = useState<string | null>(null);
+  const [holders, setHolders] = useState<{ address: string; amount: number }[]>([]);
+  const [loadingHolders, setLoadingHolders] = useState(false);
+  const [isHoldersModalOpen, setIsHoldersModalOpen] = useState(false);
 
   useEffect(() => {
     async function fetchMetadata() {
@@ -61,6 +132,7 @@ export default function TokenMetadata() {
           uri: asset.metadata.uri,
           supply: Number(asset.mint.supply),
           decimals: asset.mint.decimals,
+          holders: [],
           jsonMetadata
         });
 
@@ -75,8 +147,68 @@ export default function TokenMetadata() {
     fetchMetadata();
   }, [tokenAddress]);
 
+  const fetchTokenHolders = async (mintAddress: string) => {
+    setLoadingHolders(true);
+    try {
+      const connection = new Connection("https://rpc.devnet.soo.network/rpc");
+      const mintPubkey = new PublicKey(mintAddress);
+      
+      const accounts = await connection.getProgramAccounts(TOKEN_PROGRAM_ID, {
+        filters: [
+          {
+            dataSize: 165, // Tamaño de una cuenta de token
+          },
+          {
+            memcmp: {
+              offset: 0,
+              bytes: mintPubkey.toBase58(),
+            },
+          },
+        ],
+      });
+
+      // Procesar las cuentas para obtener los holders reales
+      const holdersData = accounts
+        .map(account => {
+          // Decodificar la data de la cuenta usando AccountLayout
+          const accountInfo = AccountLayout.decode(account.account.data);
+          
+          // Obtener el balance y el owner real
+          const amount = Number(accountInfo.amount);
+          const ownerAddress = accountInfo.owner.toBase58();
+
+          if (amount > 0) {
+            return {
+              address: ownerAddress, // Usar la dirección del owner en lugar de la ATA
+              tokenAccount: account.pubkey.toBase58(), // Opcional: guardar también la dirección de la ATA
+              amount: amount / Math.pow(10, metadata?.decimals || 0),
+            };
+          }
+          return null;
+        })
+        .filter((holder): holder is { address: string; tokenAccount: string; amount: number } => holder !== null);
+
+      setHolders(holdersData);
+    } catch (err) {
+      console.error('Error fetching holders:', err);
+    } finally {
+      setLoadingHolders(false);
+    }
+  };
+
+  useEffect(() => {
+    if (tokenAddress && metadata) {
+      fetchTokenHolders(tokenAddress);
+    }
+  }, [tokenAddress, metadata]);
+
+  const handleTokenSelect = (address: string) => {
+    setTokenAddress(address);
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-3 sm:p-6 bg-gradient-to-br from-black via-purple-900/20 to-red-900/20 rounded-xl border border-purple-800/50 shadow-xl shadow-purple-500/20">
+      <TokenList onSelectToken={handleTokenSelect} />
       <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-purple-400 via-red-300 to-purple-400 text-transparent bg-clip-text mb-4 sm:mb-6">
         Token Explorer
       </h2>
@@ -177,6 +309,31 @@ export default function TokenMetadata() {
               })}
             </div>
           </div>
+        </div>
+      )}
+
+      {metadata && (
+        <div className="mt-4">
+          <button
+            onClick={() => setIsHoldersModalOpen(true)}
+            className="w-full px-4 py-3 bg-black/60 rounded-lg border border-purple-800/20 hover:border-purple-500/50 transition-colors text-purple-400 hover:text-purple-300 flex items-center justify-center gap-2"
+          >
+            <span>Click to See Token Holders</span>
+            {loadingHolders ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+            ) : (
+              <span className="text-sm">({holders.length})</span>
+            )}
+          </button>
+
+          <HoldersModal
+            isOpen={isHoldersModalOpen}
+            onClose={() => setIsHoldersModalOpen(false)}
+            holders={holders}
+            symbol={metadata.symbol}
+            tokenName={metadata.name}
+            totalSupply={metadata.supply / Math.pow(10, metadata.decimals)}
+          />
         </div>
       )}
 

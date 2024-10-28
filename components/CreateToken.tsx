@@ -36,6 +36,7 @@ export default function CreateToken() {
   const { connection } = useConnection();
   const [balance, setBalance] = useState<number>(0);
   const [showForm, setShowForm] = useState(false);
+  const [lastTokenCreation, setLastTokenCreation] = useState<number | null>(null);
   const [formData, setFormData] = useState<TokenForm>({
     name: '',
     symbol: '',
@@ -52,6 +53,15 @@ export default function CreateToken() {
   const [tokenMintAddress, setTokenMintAddress] = useState<string>('');
 
   useEffect(() => {
+    if (wallet.publicKey) {
+      const stored = localStorage.getItem(`lastTokenCreation_${wallet.publicKey.toString()}`);
+      if (stored) {
+        setLastTokenCreation(Number(stored));
+      }
+    }
+  }, [wallet.publicKey]);
+
+  useEffect(() => {
     async function checkBalance() {
       if (wallet.publicKey) {
         try {
@@ -65,10 +75,25 @@ export default function CreateToken() {
     }
 
     checkBalance();
-    // Update balance every 30 seconds
     const interval = setInterval(checkBalance, 30000);
     return () => clearInterval(interval);
   }, [wallet.publicKey, connection]);
+
+  const canCreateToken = () => {
+    if (!lastTokenCreation) return true;
+    const hoursElapsed = (Date.now() - lastTokenCreation) / (1000 * 60 * 60);
+    return hoursElapsed >= 24;
+  };
+
+  const getTimeRemaining = () => {
+    if (!lastTokenCreation) return 'Create New Token';
+    const hoursRemaining = 24 - (Date.now() - lastTokenCreation) / (1000 * 60 * 60);
+    if (hoursRemaining <= 0) return 'Create New Token';
+    
+    const hours = Math.floor(hoursRemaining);
+    const minutes = Math.floor((hoursRemaining - hours) * 60);
+    return `Wait ${hours}h ${minutes}m to create next token`;
+  };
 
   const hasMinimumBalance = balance >= 0.1;
 
@@ -153,6 +178,9 @@ export default function CreateToken() {
 
     try {
       if (!formData.image) throw new Error('Image is required');
+      if (!canCreateToken()) {
+        throw new Error('You must wait 24 hours between token creations');
+      }
 
       const ipfsImageHash = await handleImageUpload(formData.image);
       const metadata = {
@@ -181,6 +209,9 @@ export default function CreateToken() {
       const mintAddress = await createToken(metadataUri);
       setTokenMintAddress(mintAddress.toString());
       setShowForm(false);
+
+      setLastTokenCreation(Date.now());
+      localStorage.setItem(`lastTokenCreation_${wallet.publicKey?.toString()}`, Date.now().toString());
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error creating token');
     } finally {
@@ -197,8 +228,10 @@ export default function CreateToken() {
               <Button
                 onClick={() => setShowForm(!showForm)}
                 variant="primary"
+                disabled={loading}
+                className={!canCreateToken() ? "opacity-50" : ""}
               >
-                Create New Token
+                {getTimeRemaining()}
               </Button>
 
               {tokenMintAddress && (
@@ -343,6 +376,12 @@ export default function CreateToken() {
                     required
                   />
                 </div>
+              </div>
+
+              <div className="mb-6 text-center">
+                <h3 className="text-xl font-bold text-purple-400">
+                  Remember: You can only create one token every 24 hours
+                </h3>
               </div>
 
               <div className="mt-6 p-4 bg-black/20 rounded-lg border border-purple-800/30 text-gray-400 text-sm space-y-4">
