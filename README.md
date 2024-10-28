@@ -24,7 +24,9 @@ A Next.js project for exploring and creating tokens on the Solana blockchain.
 Create a `.env.local` file in the root directory with:
 
 NEXT_PUBLIC_PINATA_API_KEY=your_pinata_api_key
+
 NEXT_PUBLIC_PINATA_SECRET_KEY=your_pinata_secret_key
+
 NEXT_PUBLIC_PINATA_JWT=your_pinata_jwt
 
 ## Installation
