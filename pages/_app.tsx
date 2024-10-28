@@ -5,6 +5,8 @@ import { PhantomWalletAdapter } from '@solana/wallet-adapter-wallets';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
 import dynamic from 'next/dynamic';
+import { Analytics } from "@vercel/analytics/react"
+
 
 require('@solana/wallet-adapter-react-ui/styles.css');
 
