@@ -156,7 +156,7 @@ export default function TokenMetadata() {
       const accounts = await connection.getProgramAccounts(TOKEN_PROGRAM_ID, {
         filters: [
           {
-            dataSize: 165, // Tamaño de una cuenta de token
+            dataSize: 165, // Size of a token account
           },
           {
             memcmp: {
@@ -167,20 +167,20 @@ export default function TokenMetadata() {
         ],
       });
 
-      // Procesar las cuentas para obtener los holders reales
+      // Process accounts to get actual holders
       const holdersData = accounts
         .map(account => {
-          // Decodificar la data de la cuenta usando AccountLayout
+          // Decode account data using AccountLayout
           const accountInfo = AccountLayout.decode(account.account.data);
           
-          // Obtener el balance y el owner real
+          // Get balance and actual owner
           const amount = Number(accountInfo.amount);
           const ownerAddress = accountInfo.owner.toBase58();
 
           if (amount > 0) {
             return {
-              address: ownerAddress, // Usar la dirección del owner en lugar de la ATA
-              tokenAccount: account.pubkey.toBase58(), // Opcional: guardar también la dirección de la ATA
+              address: ownerAddress, // Use owner address instead of ATA
+              tokenAccount: account.pubkey.toBase58(), // Optional: also store ATA address
               amount: amount / Math.pow(10, metadata?.decimals || 0),
             };
           }

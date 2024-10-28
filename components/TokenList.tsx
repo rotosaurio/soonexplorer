@@ -15,7 +15,7 @@ interface TokenInfo {
   symbol: string;
   name: string;
   image: string;
-  amount: number;  // Agregamos la cantidad
+  amount: number;  
 }
 
 export default function TokenList({ onSelectToken }: TokenListProps) {
