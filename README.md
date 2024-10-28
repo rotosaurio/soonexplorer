@@ -1,40 +1,85 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Token Explorer
 
-## Getting Started
+# Token Explorer
 
-First, run the development server:
+A Next.js project for exploring and creating tokens on the Solana blockchain.
 
-```bash
+## Features
+
+- Token exploration
+- Fungible token creation
+- Token metadata visualization
+- Solana wallet integration
+- IPFS metadata and image storage via Pinata
+
+## Prerequisites
+
+- Node.js 18.x or higher
+- Phantom wallet installed
+- SOL on Devnet (minimum 0.1 SOL for token creation)
+- Pinata account for IPFS
+
+## Environment Variables
+
+Create a `.env.local` file in the root directory with:
+
+NEXT_PUBLIC_PINATA_API_KEY=your_pinata_api_key
+NEXT_PUBLIC_PINATA_SECRET_KEY=your_pinata_secret_key
+NEXT_PUBLIC_PINATA_JWT=your_pinata_jwt
+
+## Installation
+
+npm install
+
+# or
+
+yarn install
+
+# or
+
+pnpm install
+
+## Running the Project
+
 npm run dev
+
 # or
+
 yarn dev
+
 # or
+
 pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000 in your browser.
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+## Usage
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+1. Connect your backpack wallet with the SOON RPC (https://rpc.devnet.soo.network/rpc)
+2. Ensure you have SOL on SOON RPC
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+    - Get sep ETH from SOON faucet (https://faucet.soo.network/)
+    - Or use SOON bridge if you have ETH on Sepolia (https://bridge.devnet.soo.network/home)
+3. To create a token:
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+    - Click on "Create New Token"
+    - Fill in token details
+    - Upload an image for the token
+    - Confirm the transaction in your wallet
 
-## Learn More
+## Technologies Used
 
-To learn more about Next.js, take a look at the following resources:
+- Next.js
+- TypeScript
+- Solana Web3.js
+- Metaplex Foundation SDK
+- Tailwind CSS
+- Pinata (IPFS)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Contributions
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+Contributions are welcome. Please open an issue or submit a pull request.
 
-## Deploy on Vercel
+## Developer
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Edgar Alfredo - [@EdgarRi62992282](https://twitter.com/EdgarRi62992282)

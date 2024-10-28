@@ -76,27 +76,32 @@ export default function TokenMetadata() {
   }, [tokenAddress]);
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto p-3 sm:p-6 bg-gradient-to-br from-black via-purple-900/20 to-red-900/20 rounded-xl border border-purple-800/50 shadow-xl shadow-purple-500/20">
+      <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-purple-400 via-red-300 to-purple-400 text-transparent bg-clip-text mb-4 sm:mb-6">
+        Token Explorer
+      </h2>
+      <p className="text-gray-400 text-sm sm:text-base">Enter a token address to view its metadata</p>
       <TokenSearch onSearch={setTokenAddress} />
+      
       {!tokenAddress ? (
-        <div className="text-center p-8 bg-[#0B1416] rounded-xl border border-purple-800">
+        <div className="text-center p-8 bg-black/40 rounded-xl border border-purple-800/30 mt-4">
           <h2 className="text-xl text-gray-300 mb-2">Token Explorer</h2>
-          <p className="text-gray-500">Enter a token address to view its metadata</p>
+          <p className="text-gray-400">Enter a token address to view its metadata</p>
         </div>
       ) : loading ? (
         <div className="flex justify-center items-center min-h-[400px]">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
         </div>
       ) : error ? (
-        <div className="text-red-500 p-4 text-center bg-[#0B1416] rounded-xl border border-purple-800">
+        <div className="text-red-400 p-4 text-center bg-black/40 rounded-xl border border-purple-800/30 mt-4">
           Error: {error}
         </div>
       ) : metadata && (
-        <div className="bg-[#0B1416] rounded-xl border border-purple-800 overflow-hidden">
+        <div className="bg-black/40 rounded-xl border border-purple-800/30 overflow-hidden mt-4">
           <div className="p-6">
             <div className="flex items-center gap-4 mb-6">
               {metadata.jsonMetadata?.image ? (
-                <div className="w-16 h-16 rounded-full overflow-hidden">
+                <div className="w-16 h-16 rounded-full overflow-hidden border border-purple-800/30">
                   <img 
                     src={metadata.jsonMetadata.image}
                     alt={metadata.name}
@@ -104,28 +109,30 @@ export default function TokenMetadata() {
                   />
                 </div>
               ) : (
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-yellow-500 rounded-full"></div>
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-red-500 rounded-full"></div>
               )}
               <div>
-                <h2 className="text-2xl font-bold text-white">{metadata.name}</h2>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-red-300 to-purple-400 text-transparent bg-clip-text">
+                  {metadata.name}
+                </h2>
                 <p className="text-purple-400">{metadata.jsonMetadata?.symbol}</p>
               </div>
             </div>
 
             <div className="space-y-4">
-              <div className="bg-black/20 p-4 rounded-lg">
+              <div className="bg-black/60 p-4 rounded-lg border border-purple-800/20">
                 <h3 className="text-gray-400 text-sm mb-1">Token Address</h3>
                 <p className="font-mono text-sm text-white break-all">{tokenAddress}</p>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-black/20 p-4 rounded-lg">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="bg-black/60 p-4 rounded-lg border border-purple-800/20">
                   <h3 className="text-gray-400 text-sm mb-1">Current Supply</h3>
                   <p className="font-mono text-sm text-white">
                     {(metadata.supply / Math.pow(10, metadata.decimals)).toLocaleString()}
                   </p>
                 </div>
-                <div className="bg-black/20 p-4 rounded-lg">
+                <div className="bg-black/60 p-4 rounded-lg border border-purple-800/20">
                   <h3 className="text-gray-400 text-sm mb-1">Decimals</h3>
                   <p className="font-mono text-sm text-white">{metadata.decimals}</p>
                 </div>
@@ -138,18 +145,18 @@ export default function TokenMetadata() {
                   return (
                     <div key={key} className="space-y-2">
                       <h3 className="text-gray-400 text-sm mb-2 capitalize">Creator</h3>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-black/20 p-4 rounded-lg">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="bg-black/60 p-4 rounded-lg border border-purple-800/20">
                           <h3 className="text-gray-400 text-sm mb-1">Name</h3>
                           <p className="text-white">{value.name}</p>
                         </div>
-                        <div className="bg-black/20 p-4 rounded-lg">
+                        <div className="bg-black/60 p-4 rounded-lg border border-purple-800/20">
                           <h3 className="text-gray-400 text-sm mb-1">Site</h3>
                           <a 
                             href={value.site} 
                             target="_blank" 
                             rel="noopener noreferrer" 
-                            className="text-purple-400 hover:text-purple-300 underline"
+                            className="text-purple-400 hover:text-purple-300 transition-colors"
                           >
                             {value.site}
                           </a>
@@ -160,7 +167,7 @@ export default function TokenMetadata() {
                 }
 
                 return (
-                  <div key={key} className="bg-black/20 p-4 rounded-lg">
+                  <div key={key} className="bg-black/60 p-4 rounded-lg border border-purple-800/20">
                     <h3 className="text-gray-400 text-sm mb-1 capitalize">{key}</h3>
                     <p className="text-white break-all">
                       {typeof value === 'object' ? JSON.stringify(value, null, 2) : value.toString()}
@@ -172,9 +179,7 @@ export default function TokenMetadata() {
           </div>
         </div>
       )}
-      <div className="fixed bottom-4 right-4 text-gray-500 text-sm">
-        Powered by SOON • Built by Edgar Alfredo 
-      </div>
+
     </div>
   );
 }
