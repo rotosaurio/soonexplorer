@@ -7,7 +7,7 @@ import { createFungible, mintV1, TokenStandard } from "@metaplex-foundation/mpl-
 import { percentAmount, generateSigner, some, publicKey, Pda } from "@metaplex-foundation/umi";
 import { createSignerFromWalletAdapter } from '@metaplex-foundation/umi-signer-wallet-adapters';
 import Button from './Button';
-import { LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { LAMPORTS_PER_SOL, Connection } from '@solana/web3.js';
 
 interface TokenForm {
   name: string;
@@ -65,7 +65,8 @@ export default function CreateToken() {
     async function checkBalance() {
       if (wallet.publicKey) {
         try {
-          const balance = await connection.getBalance(wallet.publicKey);
+          const soonConnection = new Connection("https://rpc.devnet.soo.network/rpc");
+          const balance = await soonConnection.getBalance(wallet.publicKey);
           setBalance(balance / LAMPORTS_PER_SOL);
         } catch (error) {
           console.error('Error fetching balance:', error);
@@ -77,7 +78,7 @@ export default function CreateToken() {
     checkBalance();
     const interval = setInterval(checkBalance, 30000);
     return () => clearInterval(interval);
-  }, [wallet.publicKey, connection]);
+  }, [wallet.publicKey]);
 
   const canCreateToken = () => {
     if (!lastTokenCreation) return true;
@@ -320,13 +321,28 @@ export default function CreateToken() {
                 </div>
                 <div>
                   <label className="block text-gray-400 text-sm mb-2">Image</label>
-                  <input
-                    type="file"
-                    name="image"
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 bg-black/40 rounded-xl border border-purple-800/30 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 file:bg-purple-800 file:text-white file:border-0 file:rounded-lg file:px-4 file:py-2 file:mr-4 file:hover:bg-purple-700"
-                    required
-                  />
+                  <div className="flex items-center justify-center w-full">
+                    <label className="flex flex-col w-full h-32 border-2 border-purple-800/30 border-dashed hover:bg-black/40 hover:border-purple-500/50 rounded-xl cursor-pointer transition-all duration-200">
+                      <div className="flex flex-col items-center justify-center pt-7">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-purple-400"
+                          fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <p className="pt-1 text-sm tracking-wider text-gray-400">
+                          {formData.image ? formData.image.name : 'Select a file'}
+                        </p>
+                      </div>
+                      <input 
+                        type="file" 
+                        name="image" 
+                        onChange={handleChange} 
+                        className="opacity-0" 
+                        accept="image/*" 
+                        required 
+                      />
+                    </label>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-gray-400 text-sm mb-2">Decimals</label>
