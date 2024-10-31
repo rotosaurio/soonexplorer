@@ -8,6 +8,7 @@ import { percentAmount, generateSigner, some, publicKey, Pda } from "@metaplex-f
 import { createSignerFromWalletAdapter } from '@metaplex-foundation/umi-signer-wallet-adapters';
 import Button from './Button';
 import { LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { uploadImageToFilebase, uploadMetadataToFilebase, getFilebaseUrl } from '../utils/filebase';
 
 interface TokenForm {
   name: string;
@@ -36,7 +37,6 @@ export default function CreateToken() {
   const { connection } = useConnection();
   const [balance, setBalance] = useState<number>(0);
   const [showForm, setShowForm] = useState(false);
-  const [lastTokenCreation, setLastTokenCreation] = useState<number | null>(null);
   const [formData, setFormData] = useState<TokenForm>({
     name: '',
     symbol: '',
@@ -51,15 +51,6 @@ export default function CreateToken() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tokenMintAddress, setTokenMintAddress] = useState<string>('');
-
-  useEffect(() => {
-    if (wallet.publicKey) {
-      const stored = localStorage.getItem(`lastTokenCreation_${wallet.publicKey.toString()}`);
-      if (stored) {
-        setLastTokenCreation(Number(stored));
-      }
-    }
-  }, [wallet.publicKey]);
 
   useEffect(() => {
     async function checkBalance() {
@@ -79,22 +70,6 @@ export default function CreateToken() {
     return () => clearInterval(interval);
   }, [wallet.publicKey, connection]);
 
-  const canCreateToken = () => {
-    if (!lastTokenCreation) return true;
-    const hoursElapsed = (Date.now() - lastTokenCreation) / (1000 * 60 * 60);
-    return hoursElapsed >= 24;
-  };
-
-  const getTimeRemaining = () => {
-    if (!lastTokenCreation) return 'Create New Token';
-    const hoursRemaining = 24 - (Date.now() - lastTokenCreation) / (1000 * 60 * 60);
-    if (hoursRemaining <= 0) return 'Create New Token';
-    
-    const hours = Math.floor(hoursRemaining);
-    const minutes = Math.floor((hoursRemaining - hours) * 60);
-    return `Wait ${hours}h ${minutes}m to create next token`;
-  };
-
   const hasMinimumBalance = balance >= 0.1;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -112,35 +87,12 @@ export default function CreateToken() {
     }
   };
 
-  const handleImageUpload = async (file: File) => {
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const response = await axios.post(
-        'https://api.pinata.cloud/pinning/pinFileToIPFS',
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_PINATA_JWT}`
-          }
-        }
-      );
-
-      return response.data.IpfsHash;
-    } catch (err) {
-      throw new Error(err instanceof Error ? err.message : 'Error uploading image');
-    }
-  };
-
   const createToken = async (uri: string) => {
     if (!wallet.publicKey) throw new Error('Please connect your wallet first');
 
     const umi = createUmi("https://rpc.devnet.soo.network/rpc")
       .use(mplTokenMetadata());
   
-    // Configure signer directly
     const walletAdapter = createSignerFromWalletAdapter(wallet);
     umi.identity = walletAdapter;
     umi.payer = walletAdapter;
@@ -178,40 +130,36 @@ export default function CreateToken() {
 
     try {
       if (!formData.image) throw new Error('Image is required');
-      if (!canCreateToken()) {
-        throw new Error('You must wait 24 hours between token creations');
-      }
 
-      const ipfsImageHash = await handleImageUpload(formData.image);
+      const { url: imageIpfsUrl, cid: imageCid } = await uploadImageToFilebase(formData.image);
+      
       const metadata = {
         name: formData.name,
         symbol: formData.symbol,
         description: formData.description,
-        image: `https://gateway.pinata.cloud/ipfs/${ipfsImageHash}`,
+        image: `https://assistant-scarlet-goose.myfilebase.com/ipfs/${imageCid}`,
         creator: {
           name: formData.creatorName,
           site: formData.creatorSite
         }
       };
 
-      const response = await axios.post(
-        'https://api.pinata.cloud/pinning/pinJSONToIPFS',
-        metadata,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_PINATA_JWT}`
-          }
-        }
-      );
+      console.log('Token Metadata a ser minteada:', {
+        ...metadata,
+        mintAmount: formData.mintAmount,
+        decimals: formData.decimals,
+        sellerFeeBasisPoints: formData.sellerFeeBasisPoints
+      });
 
-      const metadataUri = `https://gateway.pinata.cloud/ipfs/${response.data.IpfsHash}`;
-      const mintAddress = await createToken(metadataUri);
+      const { url: metadataUrl, cid: metadataCid } = await uploadMetadataToFilebase(metadata);
+      
+      console.log('Image CID:', imageCid);
+      console.log('Metadata CID:', metadataCid);
+      console.log('Metadata URL:', getFilebaseUrl(metadataCid));
+
+      const mintAddress = await createToken(getFilebaseUrl(metadataCid));
       setTokenMintAddress(mintAddress.toString());
       setShowForm(false);
-
-      setLastTokenCreation(Date.now());
-      localStorage.setItem(`lastTokenCreation_${wallet.publicKey?.toString()}`, Date.now().toString());
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error creating token');
     } finally {
@@ -229,9 +177,8 @@ export default function CreateToken() {
                 onClick={() => setShowForm(!showForm)}
                 variant="primary"
                 disabled={loading}
-                className={!canCreateToken() ? "opacity-50" : ""}
               >
-                {getTimeRemaining()}
+                Create New Token
               </Button>
 
               {tokenMintAddress && (
@@ -376,12 +323,6 @@ export default function CreateToken() {
                     required
                   />
                 </div>
-              </div>
-
-              <div className="mb-6 text-center">
-                <h3 className="text-xl font-bold text-purple-400">
-                  Remember: You can only create one token every 24 hours
-                </h3>
               </div>
 
               <div className="mt-6 p-4 bg-black/20 rounded-lg border border-purple-800/30 text-gray-400 text-sm space-y-4">

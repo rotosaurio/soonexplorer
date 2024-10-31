@@ -124,6 +124,16 @@ export default function TokenMetadata() {
         if (asset.metadata.uri) {
           const response = await fetch(asset.metadata.uri);
           jsonMetadata = await response.json();
+          console.log('Token Metadata:', {
+            name: asset.metadata.name,
+            symbol: asset.metadata.symbol,
+            uri: asset.metadata.uri,
+            supply: Number(asset.mint.supply),
+            decimals: asset.mint.decimals,
+            jsonMetadata,
+            holders: holders,
+            mintAddress: tokenAddress
+          });
         }
 
         setMetadata({
@@ -188,6 +198,7 @@ export default function TokenMetadata() {
         })
         .filter((holder): holder is { address: string; tokenAccount: string; amount: number } => holder !== null);
 
+      console.log('Token Holders:', holdersData);
       setHolders(holdersData);
     } catch (err) {
       console.error('Error fetching holders:', err);
