@@ -5,7 +5,7 @@ interface TokenMetadata {
   symbol: string;
   description: string;
   image: string;
-  creator: {
+  creator?: {
     name: string;
     site: string;
   };
@@ -13,6 +13,11 @@ interface TokenMetadata {
     trait_type: string;
     value: string;
   }>;
+  collection?: {
+    name: string;
+    size: number;
+    number: number;
+  };
 }
 
 interface FilebaseResponse {

@@ -15,7 +15,18 @@ interface TokenInfo {
   symbol: string;
   name: string;
   image: string;
-  amount: number;  
+  amount: number;
+  isNft: boolean;
+}
+
+async function umiSwitchToSoonDevnet(umi: any) {
+  umi.programs.add({
+    name: "mplTokenMetadata",
+    publicKey: publicKey("6C4GR9AtMGF25sjXKtdB7A6NVQUudEQWw97kG61pGuA1"),
+    getErrorFromCode: () => null,
+    getErrorFromName: () => null,
+    isOnCluster: () => true,
+  }, true);
 }
 
 export default function TokenList({ onSelectToken }: TokenListProps) {
@@ -23,6 +34,7 @@ export default function TokenList({ onSelectToken }: TokenListProps) {
   const { connection } = useConnection();
   const [tokens, setTokens] = useState<TokenInfo[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showNfts, setShowNfts] = useState(false);
 
   useEffect(() => {
     async function fetchUserTokens() {
@@ -44,17 +56,11 @@ export default function TokenList({ onSelectToken }: TokenListProps) {
                             Math.pow(10, account.account.data.parsed.info.tokenAmount.decimals);
               try {
                 const umi = createUmi("https://rpc.devnet.soo.network/rpc").use(mplTokenMetadata());
-                
-                umi.programs.add({
-                  name: "mplTokenMetadata",
-                  publicKey: publicKey("6C4GR9AtMGF25sjXKtdB7A6NVQUudEQWw97kG61pGuA1"),
-                  getErrorFromCode: () => null,
-                  getErrorFromName: () => null,
-                  isOnCluster: () => true,
-                }, true);
+                await umiSwitchToSoonDevnet(umi);
 
                 const asset = await fetchDigitalAsset(umi, publicKey(mintAddress));
                 let imageUrl = '';
+                let isNft = Number(asset.mint.supply) === 1 && asset.mint.decimals === 0;
                 
                 if (asset.metadata.uri) {
                   const response = await fetch(asset.metadata.uri);
@@ -67,7 +73,8 @@ export default function TokenList({ onSelectToken }: TokenListProps) {
                   symbol: asset.metadata.symbol,
                   name: asset.metadata.name,
                   image: imageUrl,
-                  amount: amount
+                  amount: amount,
+                  isNft
                 };
               } catch (err) {
                 return {
@@ -75,7 +82,8 @@ export default function TokenList({ onSelectToken }: TokenListProps) {
                   symbol: 'Unknown',
                   name: 'Unknown Token',
                   image: '',
-                  amount: amount
+                  amount: amount,
+                  isNft: false
                 };
               }
             })
@@ -92,20 +100,42 @@ export default function TokenList({ onSelectToken }: TokenListProps) {
     fetchUserTokens();
   }, [wallet.publicKey, connection]);
 
+  const filteredTokens = tokens.filter(token => token.isNft === showNfts);
+
   if (!wallet.publicKey) return null;
 
   return (
     <div className="fixed left-4 top-20 w-80 bg-black/40 rounded-xl border border-purple-800/30 p-4">
-      <h3 className="text-lg font-semibold text-purple-400 mb-4">
-        Your Tokens ({tokens.length})
-      </h3>
+      <div className="flex gap-2 mb-4">
+        <button
+          onClick={() => setShowNfts(false)}
+          className={`flex-1 py-2 px-4 rounded-lg transition-colors ${
+            !showNfts 
+              ? 'bg-purple-500/30 text-purple-300' 
+              : 'bg-black/30 text-gray-400 hover:bg-purple-500/20'
+          }`}
+        >
+          Your Tokens ({tokens.filter(t => !t.isNft).length})
+        </button>
+        <button
+          onClick={() => setShowNfts(true)}
+          className={`flex-1 py-2 px-4 rounded-lg transition-colors ${
+            showNfts 
+              ? 'bg-purple-500/30 text-purple-300' 
+              : 'bg-black/30 text-gray-400 hover:bg-purple-500/20'
+          }`}
+        >
+          Your NFTs ({tokens.filter(t => t.isNft).length})
+        </button>
+      </div>
+
       {loading ? (
         <div className="flex justify-center p-4">
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-500"></div>
         </div>
-      ) : tokens.length > 0 ? (
+      ) : filteredTokens.length > 0 ? (
         <div className="space-y-3 max-h-[calc(100vh-160px)] overflow-y-auto">
-          {tokens.map((token) => (
+          {filteredTokens.map((token) => (
             <button
               key={token.address}
               onClick={() => onSelectToken(token.address)}
@@ -141,8 +171,8 @@ export default function TokenList({ onSelectToken }: TokenListProps) {
           ))}
         </div>
       ) : (
-        <div className="text-gray-400 text-sm text-center">
-          No tokens found
+        <div className="text-center text-gray-400 p-4">
+          No {showNfts ? 'NFTs' : 'tokens'} found
         </div>
       )}
     </div>
