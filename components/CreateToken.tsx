@@ -168,194 +168,174 @@ export default function CreateToken() {
   };
 
   return (
-    <div className="relative flex items-center gap-4 flex-wrap">
+    <div className="relative">
       {wallet.publicKey ? (
-        <div className="flex items-center gap-4">
+        <div>
           {hasMinimumBalance ? (
             <>
-              <Button
+              <button
                 onClick={() => setShowForm(!showForm)}
-                variant="primary"
-                disabled={loading}
+                className="text-gray-400 text-sm bg-gradient-to-r from-purple-500/10 to-red-500/10 p-2 rounded-lg backdrop-blur-sm hover:from-purple-500/20 hover:to-red-500/20 transition-colors"
               >
                 Create New Token
-              </Button>
+              </button>
 
-              {tokenMintAddress && (
-                <div className="p-4 bg-black/20 rounded-lg border border-purple-800">
-                  <h3 className="text-gray-400 text-sm mb-2">Token Created!</h3>
-                  <p className="text-white break-all font-mono">{tokenMintAddress}</p>
+              {showForm && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
+                  <div className="bg-gradient-to-br from-black via-purple-900/20 to-red-900/20 p-4 sm:p-6 rounded-xl border border-purple-800/50 w-full max-w-5xl m-2 sm:m-4 overflow-y-auto max-h-[95vh] sm:max-h-[90vh] shadow-xl shadow-purple-500/20">
+                    <div className="flex justify-between items-center mb-6">
+                      <h2 className="text-2xl font-bold text-white">Create New Token</h2>
+                      <button
+                        onClick={() => setShowForm(false)}
+                        className="!p-2"
+                      >
+                        ×
+                      </button>
+                    </div>
+                    
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-gray-400 text-sm mb-2">Token Name</label>
+                          <input
+                            type="text"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            className="w-full px-4 py-2 bg-black/40 rounded-xl border border-purple-800/30 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-purple-500 transition-all duration-200"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-gray-400 text-sm mb-2">Symbol</label>
+                          <input
+                            type="text"
+                            name="symbol"
+                            value={formData.symbol}
+                            onChange={handleChange}
+                            className="w-full px-4 py-2 bg-black/40 rounded-xl border border-purple-800/30 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-purple-500 transition-all duration-200"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-gray-400 text-sm mb-2">Description</label>
+                          <textarea
+                            name="description"
+                            value={formData.description}
+                            onChange={handleChange}
+                            className="w-full px-4 py-2 bg-black/40 rounded-xl border border-purple-800/30 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-purple-500 transition-all duration-200"
+                            rows={3}
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-gray-400 text-sm mb-2">Image</label>
+                          <input
+                            type="file"
+                            name="image"
+                            onChange={handleChange}
+                            className="w-full px-4 py-2 bg-black/40 rounded-xl border border-purple-800/30 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 file:bg-purple-800 file:text-white file:border-0 file:rounded-lg file:px-4 file:py-2 file:mr-4 file:hover:bg-purple-700"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-gray-400 text-sm mb-2">Decimals</label>
+                          <input
+                            type="number"
+                            name="decimals"
+                            value={formData.decimals}
+                            onChange={handleChange}
+                            className="w-full px-4 py-2 bg-black/40 rounded-xl border border-purple-800/30 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-purple-500 transition-all duration-200"
+                            required
+                            min="0"
+                            max="9"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-gray-400 text-sm mb-2">Initial Supply</label>
+                          <input
+                            type="number"
+                            name="mintAmount"
+                            value={formData.mintAmount}
+                            onChange={handleChange}
+                            className="w-full px-4 py-2 bg-black/40 rounded-xl border border-purple-800/30 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-purple-500 transition-all duration-200"
+                            required
+                            min="0"
+                            step="0.000000001"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-gray-400 text-sm mb-2">Creator Name</label>
+                          <input
+                            type="text"
+                            name="creatorName"
+                            value={formData.creatorName}
+                            onChange={handleChange}
+                            className="w-full px-4 py-2 bg-black/40 rounded-xl border border-purple-800/30 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-purple-500 transition-all duration-200"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-gray-400 text-sm mb-2">Creator Site</label>
+                          <input
+                            type="text"
+                            name="creatorSite"
+                            value={formData.creatorSite}
+                            onChange={handleChange}
+                            className="w-full px-4 py-2 bg-black/40 rounded-xl border border-purple-800/30 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-purple-500 transition-all duration-200"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="mt-6 p-4 bg-black/20 rounded-lg border border-purple-800/30 text-gray-400 text-sm space-y-4">
+                        <p>Make sure you have enough SOL to deploy and mint the Token.</p>
+                        <p>If you don't have SOL and Sepolia ETH, go to our faucet to get them. 
+                          <a href="https://faucet.soo.network/" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 ml-1">
+                            https://faucet.soo.network/
+                          </a>
+                        </p>
+                        <p>If you have Sepolia ETH, go to SOON Devnet bridge to bridge in. 
+                          <a href="https://bridge.devnet.soo.network/home" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 ml-1">
+                            https://bridge.devnet.soo.network/home
+                          </a>
+                        </p>
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={loading || !wallet.publicKey}
+                        className="w-full mt-4"
+                      >
+                        {loading ? 'Creating Token...' : 'Create Token'}
+                      </button>
+                    </form>
+
+                    {error && (
+                      <div className="mt-4 p-4 bg-black/20 rounded-lg border border-purple-800 text-purple-400">
+                        {error}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </>
           ) : (
-            <div className="flex items-center gap-4">
-              <Button
-                disabled={true}
-                variant="primary"
-                className="opacity-50 cursor-not-allowed"
-              >
-                Create New Token
-              </Button>
-              <span className="text-red-400 text-sm">
-                You need at least 0.1 SOL in SOON RPC to create tokens
-              </span>
-            </div>
+            <button
+              disabled
+              className="text-gray-400 text-sm bg-gradient-to-r from-purple-500/10 to-red-500/10 p-2 rounded-lg backdrop-blur-sm opacity-50 cursor-not-allowed"
+            >
+              Create New Token
+            </button>
           )}
         </div>
       ) : (
-        <div className="flex items-center gap-4">
-          <Button
-            onClick={() => {}}
-            variant="primary"
-            disabled={true}
-            className="opacity-50 cursor-not-allowed"
-          >
-            Connect Wallet to Create Tokens
-          </Button>
-        </div>
-      )}
-
-      {showForm && hasMinimumBalance && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
-          <div className="bg-gradient-to-br from-black via-purple-900/20 to-red-900/20 p-4 sm:p-6 rounded-xl border border-purple-800/50 w-full max-w-5xl m-2 sm:m-4 overflow-y-auto max-h-[95vh] sm:max-h-[90vh] shadow-xl shadow-purple-500/20">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-white">Create New Token</h2>
-              <Button
-                onClick={() => setShowForm(false)}
-                variant="secondary"
-                className="!p-2"
-              >
-                ×
-              </Button>
-            </div>
-            
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-gray-400 text-sm mb-2">Token Name</label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 bg-black/40 rounded-xl border border-purple-800/30 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-purple-500 transition-all duration-200"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-400 text-sm mb-2">Symbol</label>
-                  <input
-                    type="text"
-                    name="symbol"
-                    value={formData.symbol}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 bg-black/40 rounded-xl border border-purple-800/30 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-purple-500 transition-all duration-200"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-400 text-sm mb-2">Description</label>
-                  <textarea
-                    name="description"
-                    value={formData.description}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 bg-black/40 rounded-xl border border-purple-800/30 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-purple-500 transition-all duration-200"
-                    rows={3}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-400 text-sm mb-2">Image</label>
-                  <input
-                    type="file"
-                    name="image"
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 bg-black/40 rounded-xl border border-purple-800/30 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 file:bg-purple-800 file:text-white file:border-0 file:rounded-lg file:px-4 file:py-2 file:mr-4 file:hover:bg-purple-700"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-400 text-sm mb-2">Decimals</label>
-                  <input
-                    type="number"
-                    name="decimals"
-                    value={formData.decimals}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 bg-black/40 rounded-xl border border-purple-800/30 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-purple-500 transition-all duration-200"
-                    required
-                    min="0"
-                    max="9"
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-400 text-sm mb-2">Initial Supply</label>
-                  <input
-                    type="number"
-                    name="mintAmount"
-                    value={formData.mintAmount}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 bg-black/40 rounded-xl border border-purple-800/30 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-purple-500 transition-all duration-200"
-                    required
-                    min="0"
-                    step="0.000000001"
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-400 text-sm mb-2">Creator Name</label>
-                  <input
-                    type="text"
-                    name="creatorName"
-                    value={formData.creatorName}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 bg-black/40 rounded-xl border border-purple-800/30 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-purple-500 transition-all duration-200"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-400 text-sm mb-2">Creator Site</label>
-                  <input
-                    type="text"
-                    name="creatorSite"
-                    value={formData.creatorSite}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 bg-black/40 rounded-xl border border-purple-800/30 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-purple-500 transition-all duration-200"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="mt-6 p-4 bg-black/20 rounded-lg border border-purple-800/30 text-gray-400 text-sm space-y-4">
-                <p>Make sure you have enough SOL to deploy and mint the Token.</p>
-                <p>If you don't have SOL and Sepolia ETH, go to our faucet to get them. 
-                  <a href="https://faucet.soo.network/" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 ml-1">
-                    https://faucet.soo.network/
-                  </a>
-                </p>
-                <p>If you have Sepolia ETH, go to SOON Devnet bridge to bridge in. 
-                  <a href="https://bridge.devnet.soo.network/home" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 ml-1">
-                    https://bridge.devnet.soo.network/home
-                  </a>
-                </p>
-              </div>
-
-              <Button
-                type="submit"
-                disabled={loading || !wallet.publicKey}
-                variant="primary"
-                className="w-full mt-4"
-              >
-                {loading ? 'Creating Token...' : 'Create Token'}
-              </Button>
-            </form>
-
-            {error && (
-              <div className="mt-4 p-4 bg-black/20 rounded-lg border border-purple-800 text-purple-400">
-                {error}
-              </div>
-            )}
-          </div>
-        </div>
+        <button
+          disabled
+          className="text-gray-400 text-sm bg-gradient-to-r from-purple-500/10 to-red-500/10 p-2 rounded-lg backdrop-blur-sm opacity-50 cursor-not-allowed"
+        >
+          Connect Wallet to Create Tokens
+        </button>
       )}
     </div>
   );

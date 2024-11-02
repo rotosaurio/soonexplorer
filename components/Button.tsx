@@ -1,21 +1,18 @@
 import React from 'react';
 
-interface ButtonProps {
-  onClick?: () => void;
-  type?: 'button' | 'submit';
-  disabled?: boolean;
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary';
-  className?: string;
+  loading?: boolean;
   children: React.ReactNode;
 }
 
 const Button: React.FC<ButtonProps> = ({
-  onClick,
-  type = 'button',
-  disabled = false,
+  children,
   variant = 'primary',
+  loading = false,
   className = '',
-  children
+  disabled,
+  ...props
 }) => {
   const baseStyles = "px-6 py-3 rounded-xl font-bold transition-colors";
   const variantStyles = {
@@ -25,14 +22,24 @@ const Button: React.FC<ButtonProps> = ({
 
   return (
     <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      className={`${baseStyles} ${variantStyles[variant]} ${className} ${
-        disabled ? 'opacity-50 cursor-not-allowed' : ''
-      }`}
+      type="button"
+      className={`
+        ${baseStyles}
+        ${variantStyles[variant]}
+        ${className}
+        ${loading ? 'opacity-50 cursor-not-allowed' : ''}
+        ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
+      `}
+      disabled={disabled || loading}
+      {...props}
     >
-      {children}
+      {loading ? (
+        <div className="flex items-center justify-center">
+          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+        </div>
+      ) : (
+        children
+      )}
     </button>
   );
 };
