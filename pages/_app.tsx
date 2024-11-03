@@ -25,7 +25,7 @@ export default function App({ Component, pageProps }: AppProps) {
       <WalletProvider wallets={wallets} autoConnect>
         <WalletModalProviderDynamic>
           <Head>
-            <title>Explorer and token creator in SOON</title>
+            <title>SoonX</title>
           </Head>
           <Component {...pageProps} />
           <Analytics />
